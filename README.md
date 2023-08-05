@@ -11,8 +11,8 @@ Run tests:
 pytest
 ```
 
-elevator.py - all class logic in one file
-elevator_test.py - tests
-main.py - gui demo
+- elevator.py - all class logic in one file
+- elevator_test.py - tests
+- main.py - gui demo
 
-![Demo](https://github.com/necromind/elevator_logic/elevator_demo.gif)
+![Demo](https://raw.githubusercontent.com/necromind/elevator_logic/main/elevator_demo.gif)

@@ -6,7 +6,6 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 FLOOR_MAX_LIMIT = 10
-ELEVATOR_CAPACITY = 5
 
 
 class FloorError(Exception):
@@ -56,9 +55,11 @@ class Passenger(FloorValidatorMixin):
     elevator_called: bool = False
     is_inside: bool = False
 
-    def __init__(self, floor: Optional[int] = None, id: Optional[int] = None) -> None:
-        if id:
-            self.floor_current = id
+    def __init__(
+        self, floor: Optional[int] = None, id: Optional[int] = None
+    ) -> None:
+        if floor:
+            self.floor_current = floor
         else:
             self.floor_current = random.randint(1, FLOOR_MAX_LIMIT)
         if not id:
@@ -119,13 +120,15 @@ class Elevator(FloorValidatorMixin):
     __floor: int
     __floors_queue: set[int]
     passengers: set[Passenger]
+    capacity: int
 
-    def __init__(self) -> None:
+    def __init__(self, capacity: int = 5) -> None:
         self.status = StatusElevator.idle
         self.direction = Direction.up
         self.__floor = 1
         self.__floors_queue = set()
         self.passengers = set()
+        self.capacity = capacity
         logger.debug(f'Elevator created. {random.randint(0, 100)}')
 
     @property
@@ -237,9 +240,10 @@ class Elevator(FloorValidatorMixin):
             raise EnterElevatorError('Doors closed. Passenger cannot enter.')
         if passenger in self.passengers:
             raise EnterElevatorError('Passenger already in elevator.')
-        self.passengers.add(passenger)
-        passenger.enter_elevator(self)
-        logger.debug(f'{passenger} entered elevator.')
+        if len(self.passengers) < self.capacity and passenger.elevator_called:
+            self.passengers.add(passenger)
+            passenger.enter_elevator(self)
+            logger.debug(f'{passenger} entered elevator.')
 
     def remove_passenger(self, passenger: Passenger) -> None:
         if self.status != StatusElevator.open:

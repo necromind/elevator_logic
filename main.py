@@ -1,4 +1,5 @@
 import logging
+import random
 import time
 
 from logging.handlers import BufferingHandler
@@ -12,7 +13,8 @@ from rich.table import Table
 
 from elevator import FLOOR_MAX_LIMIT, Elevator, Passenger
 
-TICK_IN_SEC = 1  # Tick duration in sec
+PASSENGERS_LIMIT = 10
+TICK_IN_SEC = 2  # Tick duration in sec
 manual_tick = False  # Enter to continue
 
 logger_elevator = logging.getLogger("elevator")
@@ -78,6 +80,16 @@ def render_elevator(
     return elevator_str
 
 
+def render(
+    layout, passengers: List[List[Passenger]], elevator: Elevator
+) -> None:
+    layout["elevator"].update(Panel(
+        render_elevator(elevator, passengers),
+        border_style="green"
+    ))
+    layout['logs'].update(get_log())
+
+
 def passengers_tick(
     passengers: List[List[Passenger]], elevator: Elevator
 ) -> None:
@@ -114,12 +126,17 @@ def main():
 
     elevator = Elevator()
     passengers: List[List[Passenger]] = []
-    passengers.append([])
-    for floor in range(1, FLOOR_MAX_LIMIT+1):
-        passengers.append([Passenger(floor=floor, id=floor)])
+    for _ in range(0, FLOOR_MAX_LIMIT+1):
+        passengers.append([])
+    for _ in range(PASSENGERS_LIMIT):
+        rand_floor = random.randint(1, FLOOR_MAX_LIMIT)
+        passengers[rand_floor].append(
+            Passenger(floor=rand_floor)
+        )
 
     with Live(layout, refresh_per_second=10, screen=True):
         time_start = time.time()
+        render(layout, passengers, elevator)
         while True:
             try:
                 time.sleep(0.1)
@@ -130,11 +147,8 @@ def main():
                     elevator.move(passengers)
                     passengers_tick_end(passengers)
 
-                    layout["elevator"].update(Panel(
-                        render_elevator(elevator, passengers),
-                        border_style="green"
-                    ))
-                    layout['logs'].update(get_log())
+                    render(layout, passengers, elevator)
+
                     if manual_tick:
                         input()
             except KeyboardInterrupt:

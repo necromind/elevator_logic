@@ -219,6 +219,7 @@ class TestElevator:
         self, elevator: Elevator, passenger: Passenger
     ):
         elevator.status = StatusElevator.open
+        passenger.elevator_called = True
         elevator.add_passenger(passenger)
         assert passenger in elevator.passengers
 
@@ -243,6 +244,7 @@ class TestElevator:
         self, elevator: Elevator, passenger: Passenger
     ):
         elevator.status = StatusElevator.open
+        passenger.elevator_called = True
         elevator.add_passenger(passenger)
         elevator.remove_passenger(passenger)
         assert passenger not in elevator.passengers
